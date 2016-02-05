@@ -1,0 +1,11 @@
+- v2.0.0 better comment filtering and better REGEX.
+- v3.0.0 big refactoring, parsing code now has classes.
+- v3.1.0 now matches constructors and destructors.
+- v3.1.1 fixes problem wherein function calls were replacing function declaration that contained the updateAllViews calls.
+- v3.1.2 now matches header base classes with results for source files so reports can now should base classes in the detail report. (this version is missing 4 partial calls compared to 3.1.1 which is odd.)
+- v3.1.3 improved class name and base classes regex expressions. Now class declarations don't have to have a class specifier such as CRSAPI.
+- v3.2.0 Detailed report have a secondary table to quickly see what the line was that triggered a match.
+- v3.2.1 Some results were one-line comments. Those have been removed. About 25 results (false-results) have been removed.
+- v3.3.0 All EditMode Mgrs are now in a seperate file. Those results are grouped together but also belong to other reports.
+- v3.4.0 New Script for transactions.
+- v4.0.0 Time for a new major release. Only changes are that some of the partial results have been moved to full because they were using the hint UV_CLEAR_GRAPHIC_CACHE_AND_FULL_REDRAW.
