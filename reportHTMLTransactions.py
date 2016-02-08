@@ -1,8 +1,8 @@
+from htmlReportWriters import BaseHTMLReportWriter
 
 
 # Should have a base to share between the writers.
-class ReportHTMLWriterTransactions:
-
+class ReportHTMLWriterTransactions(BaseHTMLReportWriter):
     def __init__(self, fh):
         self.file_handle = fh
 
@@ -48,41 +48,3 @@ class ReportHTMLWriterTransactions:
         self.add_table_column(commit)
         self.end_table_row()
 
-    def create_html_head(self):
-        self.file_handle.write("<html>\n")
-        self.file_handle.write("<head>\n")
-        self.file_handle.write("<link rel='stylesheet' type='text/css' href='style.css'>\n")
-        self.file_handle.write("</head>\n")
-
-    def end_html(self):
-        self.file_handle.write("</html>\n")
-
-    def create_html_body(self):
-        self.file_handle.write("<body>\n")
-
-    def end_html_body(self):
-        self.file_handle.write("</body>\n")
-
-    def create_html_table(self):
-        self.file_handle.write("<table>\n")
-
-    def end_html_table(self):
-        self.file_handle.write("</table>\n")
-
-    def create_table_header(self, hdr_list):
-        self.start_table_row()
-        for hdr in hdr_list:
-            self.add_table_header(hdr)
-        self.end_table_row()
-
-    def start_table_row(self):
-        self.file_handle.write("<tr>\n")
-
-    def end_table_row(self):
-        self.file_handle.write("</tr>\n")
-
-    def add_table_header(self, header_str):
-        self.file_handle.write("<th>\n\t{header}\n</th>\n".format(header=header_str))
-
-    def add_table_column(self, data_str):
-        self.file_handle.write("<td>\n\t{data}\n</td>\n".format(data=data_str))

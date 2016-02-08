@@ -1,19 +1,15 @@
-import os
-import os.path
 import sys
 
 import parseUtil
 from parseHeader import *
 from parseSource import *
+from htmlReportWriters import SimpleHTMLReportWriter
 from detailedHTMLReportWriter import *
-
-from pathlib import Path
 
 """
 Ideas:
 - Missing some Partial UpdateAllViews because they pass 0 for the Canvas first param. (this is done I believe)
 - Report errors as UpdateAllViews calls might be hidden in those files.
-- Better regex definition for partial and full. (Full is only a couple of hints, the rest is partial)
 - Search for class declarations in source files.
 
 Bugs:
@@ -43,53 +39,11 @@ def make_file_for_category(file_dict, catstr, dir_path, file_name):
             fh.write("\n")
 
 
-def create_html_head(fh):
-    fh.write("<html>\n")
-    fh.write("<head>\n")
-    fh.write("<link rel='stylesheet' type='text/css' href='style.css'>\n")
-    fh.write("</head>\n")
-
-
-def end_html(fh):
-    fh.write("</html>\n")
-
-
-def create_html_body(fh):
-    fh.write("<body>\n")
-
-
-def end_html_body(fh):
-    fh.write("</body>\n")
-
-
-def create_table_header(fh):
-    fh.write("<tr>\n")
-    fh.write("<th>File</th>\n")
-    fh.write("<th>Full</th>\n")
-    fh.write("<th>Partial</th>\n")
-    fh.write("</tr>\n")
-
-
 def make_htmlfile_for_category(file_dict, catstr, dir_path, file_name):
     file_path = os.path.join(dir_path, file_name)
     with open(file_path, "w") as fh:
-        create_html_head(fh)
-        create_html_body(fh)
-        fh.write("<table>\n")
-        create_table_header(fh)
-        for file_info in file_dict[catstr]:
-            the_file_path = file_info[0]
-            counts = file_info[1:]
-
-            fh.write("<tr>\n")
-            fh.write("<td>{file_path}</td>\n<td style='text-align:center'>{full}</td>\n<td style='text-align:center'>{partial}</td>".format(
-                file_path=the_file_path, full=counts[0], partial=counts[1]))
-            fh.write("\n")
-            fh.write("</tr>\n")
-
-        fh.write("</table>\n")
-        end_html_body(fh)
-        end_html(fh)
+        writer = SimpleHTMLReportWriter(fh)
+        writer.write(file_dict, catstr)
 
 
 def make_html_detailed_report_for_categories(final_dir, file_dict, categories):
@@ -209,31 +163,9 @@ def parse_header(source_file_path):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("doh")
+        print("Missing path for files to parse.")
     else:
         path = sys.argv[1]
         script_path = sys.argv[0]
         script_dir = os.path.dirname(script_path)
         parse(path, script_dir)
-
-
-"""
-            if idxCount < 1:
-                idxCount += 1
-
-                print(the_file_path)
-                header_path = os.path.basename(the_file_path)
-                header_dir = os.path.split(the_file_path)[0]
-                header_path = os.path.splitext(header_path)[0]
-                header_path = os.path.join(header_dir, header_path) + ".h"
-
-                print("Testing path: " + header_path)
-                if os.path.exists(header_path):
-                    header_dict = ParseHeader().parse(header_path)
-
-                    for k in header_dict.keys():
-                        print("Class: {classname} Base: {base}".format(
-                                classname=k, base=header_dict.get(k)))
-                else:
-                    print("Path doesn't exist")
-"""

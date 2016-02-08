@@ -1,15 +1,10 @@
-import os
+
 import re
 
 import unittest
 
 
 class WriteWithSingleResult(unittest.TestCase):
-    def testWithSingleResult(self):
-        pass
-        """writer = DetailedHTMLReportWriter()
-        writer.write()"""
-
     def testCommentBlocks(self):
         patt_start = re.compile(".*?/\*.*")
         patt_end = re.compile(".*?\*/.*")
@@ -23,41 +18,7 @@ class WriteWithSingleResult(unittest.TestCase):
         self.assertIsNotNone(result_end)
 
 
-class DetailedHTMLReportWriter:
-    def __init__(self, fh):
-        self.file_handle = fh
-
-    def write(self, file_dict, catstr):
-        self.create_html_head()
-        self.create_html_body()
-        self.file_handle.write("<table>\n")
-        self.create_table_header()
-        for file_info in file_dict[catstr]:
-            the_file_path = file_info[0] #result[1] = full count, result[2] is partial count.
-            full_list = file_info[3]
-            partial_list = file_info[4]
-            header_dict = file_info[5]
-
-            self.write_list_results(the_file_path, "Full", full_list, header_dict)
-            self.write_list_results(the_file_path, "Partial", partial_list, header_dict)
-
-        self.file_handle.write("</table>\n")
-        self.file_handle.write("<br/>\n<br/>\n")
-        self.file_handle.write("<p>Function calls</p>\n")
-        self.file_handle.write("<table>\n")
-        self.create_table_header_for_line_results()
-        for file_info in file_dict[catstr]:
-            the_file_path = file_info[0] #result[1] = full count, result[2] is partial count.
-            full_list = file_info[3]
-            partial_list = file_info[4]
-
-            self.write_list_line_results(the_file_path, "Full", full_list)
-            self.write_list_line_results(the_file_path, "Partial", partial_list)
-
-        self.file_handle.write("</table>\n")
-        self.end_html_body()
-        self.end_html()
-
+class BaseHTMLReportWriter:
     def create_html_head(self):
         self.file_handle.write("<html>\n")
         self.file_handle.write("<head>\n")
@@ -73,21 +34,16 @@ class DetailedHTMLReportWriter:
     def end_html_body(self):
         self.file_handle.write("</body>\n")
 
-    def create_table_header(self):
-        self.start_table_row()
-        self.file_handle.write("<th>Type</th>\n")
-        self.file_handle.write("<th>File</th>\n")
-        self.file_handle.write("<th>Line#</th>\n")
-        self.file_handle.write("<th>Class</th>\n")
-        self.file_handle.write("<th>Function</th>\n")
-        self.file_handle.write("<th>Base Classes</th>\n")
-        self.end_table_row()
+    def create_html_table(self):
+        self.file_handle.write("<table>\n")
 
-    def create_table_header_for_line_results(self):
+    def end_html_table(self):
+        self.file_handle.write("</table>\n")
+
+    def create_table_header(self, hdr_list):
         self.start_table_row()
-        self.file_handle.write("<th>Type</th>\n")
-        self.file_handle.write("<th>File</th>\n")
-        self.file_handle.write("<th>Line#</th>\n")
+        for hdr in hdr_list:
+            self.add_table_header(hdr)
         self.end_table_row()
 
     def start_table_row(self):
@@ -95,6 +51,54 @@ class DetailedHTMLReportWriter:
 
     def end_table_row(self):
         self.file_handle.write("</tr>\n")
+
+    def add_table_header(self, header_str):
+        self.file_handle.write("<th>\n\t{header}\n</th>\n".format(header=header_str))
+
+    def add_table_column(self, data_str):
+        self.file_handle.write("<td>\n\t{data}\n</td>\n".format(data=data_str))
+
+    def add_table_column_with_style(self, data_str, style_str):
+        self.file_handle.write("<td {style}>\n\t{data}\n</td>\n".format(
+            data=data_str, style=style_str))
+
+
+class DetailedHTMLReportWriter(BaseHTMLReportWriter):
+    def __init__(self, fh):
+        self.file_handle = fh
+
+    def write(self, file_dict, catstr):
+        self.create_html_head()
+        self.create_html_body()
+        self.create_html_table()
+        hdr_list_main = ["Type", "File", "Line#", "Class", "Function", "Base Classes"]
+        self.create_table_header(hdr_list_main)
+        for file_info in file_dict[catstr]:
+            the_file_path = file_info[0] #result[1] = full count, result[2] is partial count.
+            full_list = file_info[3]
+            partial_list = file_info[4]
+            header_dict = file_info[5]
+
+            self.write_list_results(the_file_path, "Full", full_list, header_dict)
+            self.write_list_results(the_file_path, "Partial", partial_list, header_dict)
+
+        self.end_html_table()
+        self.file_handle.write("<br/>\n<br/>\n")
+        self.file_handle.write("<p>Function calls</p>\n")
+        self.create_html_table()
+        hdr_list_results = ["Type", "File", "Line#"]
+        self.create_table_header(hdr_list_results)
+        for file_info in file_dict[catstr]:
+            the_file_path = file_info[0] #result[1] = full count, result[2] is partial count.
+            full_list = file_info[3]
+            partial_list = file_info[4]
+
+            self.write_list_line_results(the_file_path, "Full", full_list)
+            self.write_list_line_results(the_file_path, "Partial", partial_list)
+
+        self.file_handle.write("</table>\n")
+        self.end_html_body()
+        self.end_html()
 
     def write_list_results(self, file_path, result_type_name, results, header_dict):
         for result in results: # a result contains: line, line_num, class, func.
@@ -146,6 +150,33 @@ class DetailedHTMLReportWriter:
             "<td>{line}</td>\n").format(
                 type=type_name, file_path=file_path, line_num=line_number,
                 line=line))
+
+
+class SimpleHTMLReportWriter(BaseHTMLReportWriter):
+    def __init__(self, fh):
+        self.file_handle = fh
+
+    def write(self, file_dict, catstr):
+        self.create_html_head()
+        self.create_html_body()
+        self.file_handle.write("<table>\n")
+        hdr_list = ["File", "Full", "Partial"]
+        self.create_table_header(hdr_list)
+        for file_info in file_dict[catstr]:
+            the_file_path = file_info[0]
+            counts = file_info[1:]
+
+            self.start_table_row()
+            self.add_table_column(the_file_path)
+            style = "style='text-align:center'"
+            self.add_table_column_with_style(counts[0], style)
+            self.add_table_column_with_style(counts[1], style)
+            self.end_table_row()
+
+        self.end_html_table()
+        self.end_html_body()
+        self.end_html()
+
 
 if __name__ == "__main__":
     unittest.main()
