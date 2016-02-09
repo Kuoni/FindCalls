@@ -9,3 +9,4 @@
 - v3.3.0 All EditMode Mgrs are now in a seperate file. Those results are grouped together but also belong to other reports.
 - v3.4.0 New Script for transactions.
 - v4.0.0 Time for a new major release. Only changes are that some of the partial results have been moved to full because they were using the hint UV_CLEAR_GRAPHIC_CACHE_AND_FULL_REDRAW.
+- v4.1.0 Major refactoring on how the writers are coded. I removed some code duplication.
