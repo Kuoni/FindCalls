@@ -51,6 +51,25 @@ class TestParseLinesFindCtorCommit(unittest.TestCase):
         self.assertEqual(19, res_dict["commit"])
         self.assertEqual(12, res_dict["ctor"])
 
+    def testParseCtorFirstLineFull(self):
+        lines = ["#include <SomeWindow.h>", "class ADocument;", "class GRep;",
+                 "SomeWindow::SomeWindow(int a)", "{", " ", "}",
+                 "void SomeWindow::updateGReps()", "{",
+                 "Transaction transaction(TR_PATATE(someWindowId_4), pDoc, TR_CHOSE(ID_TOTO));", # line 10 for trans.
+                 "{", "trans.commit();", "}",    # commit line 12
+                 "  pDoc->updateAllViews();"
+                 "}"    # finish function.
+                 ]
+        info = {
+            14: {"Function": "updateGReps", "Class": "SomeWindow"}
+        }
+        parser = ParseSourceFile()
+        res_dict_list = parser.parse_lines(lines, info)
+        self.assertEqual(1, len(res_dict_list))
+        res_dict = res_dict_list[0]
+        self.assertEqual(12, res_dict["commit"])
+        self.assertEqual(10, res_dict["ctor"])
+
 
 class TestProcessSourceResults(unittest.TestCase):
     # results contains 5 structs if remember correctly.

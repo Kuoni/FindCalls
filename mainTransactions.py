@@ -35,7 +35,6 @@ def parse_files(dist_dir, txt_file_path):
 
     list_of_list_of_dicts = list()
     for file in set_of_files:
-        print(file)
         a_list = parse_file(file)
         list_of_list_of_dicts.append((file, a_list))
 

@@ -77,6 +77,31 @@ class TestParser(unittest.TestCase):
         self.assertEqual("Patate", code_info[0])
         self.assertEqual("funcBlah", code_info[1])
 
+    def testUpdateAllViewsClassAndFuncWithInsideStaticCall(self):
+        lines = ["#include <Toto.h>", "#include <Patate.h>", "#include <GLevelPatate.h>",
+                 "#include <DataStore.h>", "Patate::Patate()",
+                 "{", " ", "}",
+                 "Patate::~Patate()", "{", " ", "}",
+                 "void Patate::funcBlah(ADocument* pDoc)", "{",
+                 "     MakeMoreAwesome(CrunchResult(AwesomePatate::DoAwesomeStuff(), extraVar)",
+                 "         .DoMoreAwesome() );",
+                 "     pDoc->updateAllViews( 0, UV_FULL_REDRAW );", "}"]
+
+        parser = ParseSource()
+        result = parser.parse_lines(lines)
+        self.assertTrue(result[0])
+        self.assertEqual(1, result[1])
+        self.assertEqual(0, result[2])
+
+        full_list = result[3]
+        partial_list = result[4]
+        self.assertEqual(len(full_list), 1)
+        info = full_list[0]
+        self.assertIsNotNone(info)
+        code_info = info[2]
+        self.assertEqual("Patate", code_info[0])
+        self.assertEqual("funcBlah", code_info[1])
+
     def testUpdateAllViewsClassAndDtor(self):
         lines = ["#include <toto.h>", "#include <GRep.h>", "#include <DBView.h>", "Patate::Patate()",
                  "{", "   ", "}",
@@ -149,8 +174,8 @@ class ParseSource:
     def __init__(self):
         self.patt_full = re.compile("updateAllViews.+(?:UV)|(?:AND)_FULL_REDRAW")
         self.patt_partial = re.compile("updateAllViews\(.*?\)")
-        self.patt_func_line = re.compile("\w+\s+(\w+)::(\w+)\(.*?\)\s*?$") # matches func decl, no semi-colon so doesn't match func calls
-        self.patt_ctor_dtor_line = re.compile("\s*?(\w+)::(~?\w+)\(.*?\)\s*?$") # matches func decl, no semi-colon so doesn't match func calls
+        self.patt_func_line = re.compile(r"\w+\s+(\w+)::(\w+)\(.*?\)\s*?$") # matches func decl, no semi-colon so doesn't match func calls
+        self.patt_ctor_dtor_line = re.compile(r"\s*?(\w+)::(~?\1)\(.*?\)\s*?$") # matches func decl, no semi-colon so doesn't match func calls
         self.patt_cmtblk_start = re.compile(".*?/\*.*")  # match anything ungreedily and match comment block start
         self.patt_cmtblk_end = re.compile(".*?\*/.*") # match anything ungreedily and match comment block end
 
